@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/sharafian/discord-scribe#readme",
   "dependencies": {
+    "@types/ws": "^7.2.3",
     "discord.js": "^12.0.2"
   },
   "devDependencies": {
