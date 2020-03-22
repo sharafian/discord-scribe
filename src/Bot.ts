@@ -4,15 +4,14 @@ export class Bot {
   private token = process.env.TOKEN
   private bot = new Discord.Client()
 
-
   async start () {
     if (!this.token) {
       throw new Error('TOKEN must be specified')
     }
 
-    this.bot.on('message', msg => {
+    this.bot.on('message', async msg => {
       if (msg.content === 'ping' && msg.reply) {
-        msg.reply('pong')
+        await msg.reply('pong')
       }
     })
 
@@ -20,6 +19,6 @@ export class Bot {
       console.log(`logged in as ${this.bot?.user?.tag}`)
     })
 
-    this.bot.login(this.token)
+    await this.bot.login(this.token)
   }
 }

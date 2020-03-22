@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/index.js",
     "try": "npm run build && npm start",
+    "lint": "tslint --project .",
     "build": "tsc"
   },
   "repository": {
@@ -25,6 +26,8 @@
   },
   "devDependencies": {
     "@types/node": "^13.9.3",
+    "tslint": "^6.1.0",
+    "tslint-config-standard": "^9.0.0",
     "typescript": "^3.8.3"
   }
 }
