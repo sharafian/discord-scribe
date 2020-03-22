@@ -1,0 +1,29 @@
+{
+  "name": "@sharafian/discord-scribe",
+  "version": "1.0.0",
+  "description": "Record text sessions on discord",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/index.js",
+    "try": "npm run build && npm start",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharafian/discord-scribe.git"
+  },
+  "author": "Ben Sharafian",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/sharafian/discord-scribe/issues"
+  },
+  "homepage": "https://github.com/sharafian/discord-scribe#readme",
+  "dependencies": {
+    "discord.js": "^12.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^13.9.3",
+    "typescript": "^3.8.3"
+  }
+}
