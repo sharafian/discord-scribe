@@ -1,6 +1,7 @@
 import { Bot } from './Bot'
+import reduct from 'reduct'
 
-const bot = new Bot()
+const bot = reduct()(Bot)
 bot
   .start()
   .catch((e: Error) => {

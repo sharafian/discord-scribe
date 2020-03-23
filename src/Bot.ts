@@ -1,21 +1,20 @@
 import Discord from 'discord.js'
+import { Injector } from 'reduct'
+
+import { Config } from './Config'
+import { MessageRecord, Recording } from './Recording'
 
 export type Message = Discord.Message | Discord.PartialMessage
-export interface MessageRecord {
-  time: number
-  from: string
-  content: string
-}
 
 export class Bot {
-  private token = process.env.TOKEN
-  private onPhrase = process.env.ON_PHRASE || 'start'
-  private offPhrase = process.env.OFF_PHRASE || 'stop'
-  private commandPrefix = process.env.COMMAND_PREFIX || 'scribe'
-
+  private config: Config
+  private rec: Recording
   private bot = new Discord.Client()
-  private isRecording: Map<string, boolean> = new Map()
-  private recordings: Map<string, MessageRecord[]> = new Map()
+
+  constructor (deps: Injector) {
+    this.config = deps(Config)
+    this.rec = deps(Recording)
+  }
 
   // [4:51 PM] BOT Scribe: @sharafian, Still recording.
   private serializeMessage (msg: Message): MessageRecord | void {
@@ -35,18 +34,7 @@ export class Bot {
       return false
     }
 
-    return msg.content.startsWith(this.commandPrefix)
-    /*if (!msg.mentions || msg.mentions.users.size !== 1) {
-      return false
-    }
-
-    const id = this.bot?.user?.id
-    if (!id) {
-      return false
-    }
-
-    return !!(msg.mentions.users.get(id)
-      || msg.mentions.roles.get(id))*/
+    return msg.content.startsWith(this.config.commandPrefix)
   }
 
   private async handleCommand (msg: Message): Promise<void> {
@@ -54,22 +42,27 @@ export class Bot {
       return
     }
 
-    const recState = this.isRecording.get(msg.channel.id)
+    const channelId = msg.channel.id
+    const recId = await this.rec.getRecId(channelId)
 
-    if (msg.content.includes(this.onPhrase)) {
-      this.isRecording.set(msg.channel.id, true)
-      await msg.reply(`${recState ? 'Still' : 'Started'} recording.`)
-    } else if (msg.content.includes(this.offPhrase)) {
-      this.isRecording.set(msg.channel.id, false)
+    if (msg.content.includes(this.config.onPhrase)) {
+      if (!recId) {
+        await this.rec.newRecId(channelId)
+      }
 
-      if (recState) {
+      await msg.reply(`${recId ? 'Still' : 'Started'} recording.`)
+
+    } else if (msg.content.includes(this.config.offPhrase)) {
+      await this.rec.clearRecId(channelId)
+
+      if (recId) {
         const output = Buffer.from(
-          JSON.stringify(this.recordings.get(msg.channel.id) || []),
+          await this.rec.getRecording(recId) || '',
           'utf8'
         )
 
         await msg.reply('Stopped recording.',
-          new Discord.MessageAttachment(output, 'output.json'))
+          new Discord.MessageAttachment(output, `${recId}.jsonl`))
       } else {
         await msg.reply('Not recording.')
       }
@@ -79,8 +72,8 @@ export class Bot {
   }
 
   async start (): Promise<void> {
-    if (!this.token) {
-      throw new Error('TOKEN must be specified')
+    if (!this.config.token) {
+      throw new Error('discord token must be specified (TOKEN)')
     }
 
     this.bot.on('message', async msg => {
@@ -88,14 +81,11 @@ export class Bot {
 
       const channelId = msg.channel.id
       const serialized = this.serializeMessage(msg)
-      const recState = this.isRecording.get(channelId)
+      const recId = await this.rec.getRecId(channelId)
 
-      if (serialized && recState) {
+      if (serialized && recId) {
         console.log(JSON.stringify(serialized))
-
-        const recording = this.recordings.get(channelId) || []
-        recording.push(serialized)
-        this.recordings.set(channelId, recording)
+        await this.rec.addRecordingRecord(recId, serialized)
       }
 
       if (this.messageIsCommand(msg)) {
@@ -107,6 +97,6 @@ export class Bot {
       console.log(`logged in as ${this.bot?.user?.tag}`)
     })
 
-    await this.bot.login(this.token)
+    await this.bot.login(this.config.token)
   }
 }
