@@ -9,6 +9,8 @@ Discord Scribe is a bot that you can add to your discord channel to record
 logs. You can tell it when to start and stop recording chat logs, and it will
 output the logs in a machine-readable format.
 
+[Click this link to add Discord Scribe to your server](https://discordapp.com/api/oauth2/authorize?client_id=691419974702596236&permissions=67584&scope=bot)
+
 ## How to use
 
 The commands `scribe start` and `scribe stop` turn recording on/off for a given channel.
